@@ -7,27 +7,36 @@ import Timeline from './components/Timeline/Timeline';
 
 function App() {
 
-  const [posts, setPosts] = useState([])
+  const [posts, setPosts] = useState([]);
+  const [status, setStatus] = useState(null);
+  const [editingMode, setEditingMode] = useState({
+    isEditing: false,
+    editingPost: null,
+  });
 
   useEffect(() => {
     fetchPosts();
   }, []);
 
-
   const fetchPosts = () => {
+    setStatus(1);
     fetch('https://jsonplaceholder.typicode.com/posts?userId=1')
       .then(response => response.json())
-      .then(json => setPosts(json))
+      .then(json => setPosts(json.reverse()))
+      .then(() => setStatus(2));
   }
 
   const deletePost = (postId) => {
+    setStatus(1);
     fetch('https://jsonplaceholder.typicode.com/posts/1', {
       method: 'DELETE'
     })
-      .then(() => postsAction('delete', postId));
+      .then(() => postsAction('delete', postId))
+      .then(() => setStatus(4));
   }
 
   const updatePost = (postBody) => {
+    setStatus(1);
     fetch('https://jsonplaceholder.typicode.com/posts/1', {
       method: 'PUT',
       body: JSON.stringify(postBody),
@@ -36,10 +45,13 @@ function App() {
       }
     })
       .then(response => response.json())
-      .then(json => postsAction('update', json.id, json))
+      .then(json => postsAction('update', postBody.id, json))
+      .then(() => setEditingMode({ ...editingMode, isEditing: false }))
+      .then(() => setStatus(5));
   }
 
   const addPost = (postBody) => {
+    setStatus(1);
     fetch('https://jsonplaceholder.typicode.com/posts', {
       method: 'POST',
       body: JSON.stringify(postBody),
@@ -49,20 +61,18 @@ function App() {
     })
       .then(response => response.json())
       .then(json => postsAction('add', json.id, json))
+      .then(() => setStatus(3));
   }
 
   const postsAction = (type, postId = null, postBody = null) => {
 
     const action = {
-      // adiciona um post
       add: () => {
         const newPosts = [...posts];
         newPosts.push(postBody);
         return newPosts;
       },
-      // deleta um post
       delete: () => posts.filter(post => post.id !== postId),
-      // atualiza post editado
       update: () => posts.map((post) => {
         let newPost = { ...post };
         if (post.id === postId) newPost = postBody;
@@ -73,27 +83,26 @@ function App() {
 
     const newPosts = [...action[type]() || action.default];
     setPosts(newPosts);
+  }
 
+  const editPost = (post) => {
+    setEditingMode({
+      isEditing: true,
+      editingPost: post,
+    });
   }
 
   return (
     <div className="App">
-      <BlogHeader title="Blog do Jojo" />
+      <BlogHeader title="Blog do Jojo" status={status} />
 
       <div className="blog-container">
         
-        <Form propagateAdd={addPost} />
+        <Form propagateAdd={addPost} propagateUpdate={updatePost} editingMode={editingMode} />
 
-        <Timeline posts={posts} propagateDelete={deletePost} />
+        <Timeline posts={posts} propagateDelete={deletePost} propagateEditPost={editPost} />
 
       </div>
-
-      {/* <span onClick={() => updatePost({
-        userId: 1,
-        id: 1,
-        title: 'Titulo editado!!!',
-        body: 'quia et suscipit\nsuscipit recusandae consequuntur expedita et cum\nreprehenderit molestiae ut ut quas totam\nnostrum rerum est autem sunt rem eveniet architecto'
-      })}>Atualizar</span> */}
     </div>
   );
 }

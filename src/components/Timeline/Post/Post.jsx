@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './Post.css';
 
-function Post({ postInfo, propagateDelete }) {
+function Post({ postInfo, propagateDelete, propagateEditPost }) {
 
   const [showComments, setShowComments] = useState(false);
   const [comments, setComments] = useState([]);
@@ -22,21 +22,32 @@ function Post({ postInfo, propagateDelete }) {
 
   const deletePost = (postId) => propagateDelete(postId);
 
+  const editPost = (post) => propagateEditPost(post);
+
   return (
     <>
       <div className="Post">
-        <p onClick={() => setShowComments(!showComments)}>{postInfo.title}</p> &nbsp;&nbsp;
+        <div className="content">
+          <p onClick={() => setShowComments(!showComments)}>{postInfo.title}</p>
+          <span>{postInfo.body}</span>
+        </div>
         <div className="actions">
           <b onClick={() => deletePost(postInfo.id)}>x</b> &nbsp;
-          {/* <b>✏️</b> */}
+          <b onClick={() => editPost(postInfo)}>✏️</b>
         </div>
       </div>
 
-      <div className={`Comments ${showComments ? 'visible' : ''}`}>
-        {comments.map((comment, index) => {
-          return <p key={index}>{comment.body}</p>
-        })}
-      </div>
+      {showComments
+        ? (
+          <div className="Comments">
+            <span>Comentários:</span>
+            {comments.map((comment, index) => {
+              return <p key={index}>{comment.body}</p>
+            })}
+          </div>
+        )
+        : null
+      }
     </>
   );
 }

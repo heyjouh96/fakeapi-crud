@@ -3,7 +3,7 @@ import './Timeline.css'
 
 import Post from './Post/Post';
 
-function Timeline({ posts, propagateDelete }) {
+function Timeline({ posts, propagateDelete, propagateEditPost }) {
 
   return (
     <div className="Timeline">
@@ -13,6 +13,7 @@ function Timeline({ posts, propagateDelete }) {
                                         key={index}
                                         postInfo={post}
                                         propagateDelete={propagateDelete}
+                                        propagateEditPost={propagateEditPost}
                                       />)
         : <p>no posts yet...</p>
       }

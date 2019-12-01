@@ -1,20 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './Form.css';
 
-function Form({ propagateAdd }) {
+function Form({ propagateAdd, propagateUpdate, editingMode }) {
 
   const [form, setForm] = useState({
     userId: 1,
+    id: null,
     title: '',
     body: ''
   });
+
+  useEffect(() => {
+    if (editingMode.isEditing) {
+      setForm(editingMode.editingPost);
+    }
+  }, [editingMode]);
 
   const formHandler = (key, value) => setForm({ ...form, [key]: value });
 
   const submitForm = () => {
     if (form.title !== '' && form.body !== '') {
-      propagateAdd(form);
-      setForm({ userId: 1, title: '', body: '' });
+      if (!editingMode.isEditing) {
+        propagateAdd(form);
+      } else {
+        propagateUpdate(form);
+      }
+      setForm({ userId: 1, id: null, title: '', body: '' });
     }
   }
 
@@ -34,7 +45,8 @@ function Form({ propagateAdd }) {
         value={form.body}
       ></textarea> <br />
 
-      <button onClick={() => submitForm()}>Postar</button>
+      <button onClick={() => submitForm()}>{!editingMode.isEditing ? 'Postar' : 'Editar'}</button>
+      {/* <button onClick={() => submitForm()}>Postar</button> */}
     </div>
   );
 }
